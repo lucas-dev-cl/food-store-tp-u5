@@ -1,0 +1,76 @@
+# =============================================================================
+# Food Store — Fragmento de Log de Auditoría (simulado para el TP)
+#
+# Generado sobre PostgreSQL 16 con la configuración:
+#   log_connections    = on
+#   log_disconnections = on
+#   log_statement      = 'mod'
+#   log_line_prefix    = '%t [%p] %u@%d %r '
+#
+# Fecha de captura: 2026-10-12
+# Script ejecutado: sql/auditoria_test.sql
+# Usuario que ejecutó el script: app_web
+# =============================================================================
+
+
+# --- CONEXIÓN EXITOSA (app_web desde localhost) ---
+2026-10-12 14:30:01.123 -03 [2841] app_web@food_store 127.0.0.1:52301 LOG:  connection received: host=127.0.0.1 port=52301
+2026-10-12 14:30:01.145 -03 [2841] app_web@food_store 127.0.0.1:52301 LOG:  connection authorized: user=app_web database=food_store SSL enabled (protocol=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384, bits=256)
+
+
+# --- OPERACIÓN 1: SELECT ---
+# (no aparece en el log porque log_statement='mod' no registra lecturas)
+# El SELECT de productos se ejecutó correctamente pero no deja traza.
+# Esto es un límite del mecanismo nativo: extracción masiva de datos no queda registrada.
+
+
+# --- OPERACIÓN 2: INSERT (nuevo pedido de Laura Martínez) ---
+2026-10-12 14:30:01.892 -03 [2841] app_web@food_store 127.0.0.1:52301 LOG:  statement: INSERT INTO pedido (fecha_pedido, estado_pedido, total_pedido, forma_pago_pedido, id_usuario) VALUES (NOW(), 'PENDIENTE', 3200.00, 'TARJETA', 2)
+
+
+# --- OPERACIÓN 3: UPDATE (confirmación del pedido) ---
+2026-10-12 14:30:02.104 -03 [2841] app_web@food_store 127.0.0.1:52301 LOG:  statement: UPDATE pedido SET estado_pedido = 'CONFIRMADO', total_pedido = 3200.00 WHERE id_usuario = 2 AND estado_pedido = 'PENDIENTE' AND DATE(fecha_pedido) = CURRENT_DATE
+
+
+# --- OPERACIÓN 4: INTENTO DE UPDATE NO AUTORIZADO SOBRE usuario ---
+# app_web no tiene permisos sobre la tabla usuario (el GRANT fue solo para rol_soporte
+# y solo a nivel de columna SELECT). El motor registra la sentencia Y el error.
+2026-10-12 14:30:02.317 -03 [2841] app_web@food_store 127.0.0.1:52301 LOG:  statement: UPDATE usuario SET eliminado_usuario = TRUE WHERE id_usuario = 2
+2026-10-12 14:30:02.318 -03 [2841] app_web@food_store 127.0.0.1:52301 ERROR:  permission denied for table usuario
+2026-10-12 14:30:02.318 -03 [2841] app_web@food_store 127.0.0.1:52301 STATEMENT:  UPDATE usuario SET eliminado_usuario = TRUE WHERE id_usuario = 2
+
+
+# --- DESCONEXIÓN (app_web) ---
+2026-10-12 14:30:05.001 -03 [2841] app_web@food_store 127.0.0.1:52301 LOG:  disconnection: session time: 0:00:03.878 user=app_web database=food_store host=127.0.0.1 port=52301
+
+
+# =============================================================================
+# OPERACIÓN 5: CONEXIONES FALLIDAS (ejecutadas desde terminal)
+# =============================================================================
+
+# --- Intento con usuario inexistente ---
+2026-10-12 14:31:10.441 -03 [2847] usuario_inexistente@food_store 127.0.0.1:52318 LOG:  connection received: host=127.0.0.1 port=52318
+2026-10-12 14:31:10.889 -03 [2847] usuario_inexistente@food_store 127.0.0.1:52318 FATAL:  role "usuario_inexistente" does not exist
+2026-10-12 14:31:10.889 -03 [2847] usuario_inexistente@food_store 127.0.0.1:52318 DETAIL:  Connection matched pg_hba.conf line 90: "host all all 127.0.0.1/32 scram-sha-256"
+
+# --- Intento con contraseña incorrecta para app_web ---
+2026-10-12 14:32:05.122 -03 [2851] app_web@food_store 127.0.0.1:52340 LOG:  connection received: host=127.0.0.1 port=52340
+2026-10-12 14:32:05.560 -03 [2851] app_web@food_store 127.0.0.1:52340 FATAL:  password authentication failed for user "app_web"
+2026-10-12 14:32:05.560 -03 [2851] app_web@food_store 127.0.0.1:52340 DETAIL:  Connection matched pg_hba.conf line 90: "host all all 127.0.0.1/32 scram-sha-256"
+
+
+# =============================================================================
+# LECTURA DEL LOG — RESUMEN DE EVENTOS AUDITABLES
+#
+# Evento               | Quién                  | Qué                              | Cuándo            | Desde dónde
+# ---------------------|------------------------|----------------------------------|-------------------|------------------
+# Conexión exitosa     | app_web                | Sesión autorizada (SSL TLSv1.3)  | 14:30:01          | 127.0.0.1:52301
+# INSERT               | app_web                | Nuevo pedido de usuario id=2     | 14:30:01.892      | 127.0.0.1:52301
+# UPDATE               | app_web                | Confirmación de pedido           | 14:30:02.104      | 127.0.0.1:52301
+# UPDATE rechazado     | app_web                | Intento sobre tabla usuario      | 14:30:02.317      | 127.0.0.1:52301
+# Desconexión          | app_web                | Fin de sesión (3.8 seg)          | 14:30:05          | 127.0.0.1:52301
+# Conexión fallida     | usuario_inexistente     | Rol no existe                    | 14:31:10          | 127.0.0.1:52318
+# Conexión fallida     | app_web                | Contraseña incorrecta            | 14:32:05          | 127.0.0.1:52340
+#
+# NOTA: El SELECT de la Operación 1 NO aparece en el log (log_statement='mod').
+# =============================================================================

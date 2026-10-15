@@ -1,0 +1,16 @@
+2026-10-14 21:53:18 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT fn_autenticar('usuario_a@dominio.test', '[PASSWORD_1]');
+2026-10-14 21:53:19 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT fn_autenticar('usuario_a@dominio.test', '[PASSWORD_2]');
+2026-10-14 21:53:19 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT fn_autenticar('usuario_a@dominio.test', '[PASSWORD_3]');
+2026-10-14 21:53:19 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT fn_autenticar('usuario_a@dominio.test', '[PASSWORD_4]');
+2026-10-14 21:53:20 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT fn_autenticar('usuario_a@dominio.test', '[PASSWORD_5]');
+2026-10-14 21:53:20 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT fn_autenticar('usuario_a@dominio.test', '[PASSWORD_6]');
+2026-10-14 21:53:20 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: SELECT id_usuario, nombre_usuario, apellido_usuario, mail_usuario,
+
+	       rol_usuario, eliminado_usuario, created_at_usuario
+
+	FROM usuario;
+2026-10-14 21:53:21 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  sentencia: GRANT admin_datos TO soporte_user;
+2026-10-14 21:53:21 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) ERROR:  se ha denegado el permiso para otorgar el rol «admin_datos»
+2026-10-14 21:53:21 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) DETALLE:  Sólo los roles con la opción ADMIN en el rol «admin_datos» pueden otorgar este rol.
+2026-10-14 21:53:21 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) SENTENCIA:  GRANT admin_datos TO soporte_user;
+2026-10-14 21:53:21 -03 [148848] soporte_user@tpi_db 127.0.0.1(57550) LOG:  desconexión: duración de sesión: 0:00:02.674 usuario=soporte_user base=tpi_db host=127.0.0.1 port=57550
